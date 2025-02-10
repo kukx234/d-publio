@@ -13,12 +13,18 @@ const publioApiHandlers = () => {
             console.error('Error in fetchData handler:', error.message);
             throw error;
         }
-    })
+    }),
 
     //post request
-    /*ipcMain.handle('postrequest', async () => {
-        
-    })*/
+    ipcMain.handle('postData', async (event, api_url, data) => {
+        try {
+            const response = await axios.post(BASE_URL + api_url, data);
+            return response.data;
+        } catch (error) {
+            console.error('Error in postData handler:', error.message);
+            throw error;
+        }
+    })
 }
 
 module.exports = {

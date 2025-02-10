@@ -7,6 +7,7 @@ import UserList from './pages/user/UserList.jsx';
 import OrderList from './pages/order/OrderList.jsx';
 import UserRoleList from './pages/user_role/UserRoleList.jsx';
 import MenuList from './pages/menu/MenuList.jsx';
+import './styles/global.scss';
 
 const root = createRoot(document.body);
 root.render(

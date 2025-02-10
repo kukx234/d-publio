@@ -27,8 +27,10 @@
     "babel-loader": "^9.2.1",
     "css-loader": "^6.11.0",
     "electron": "33.0.1",
+    "file-loader": "^6.2.0",
     "node-loader": "^2.0.0",
     "nodemon": "^3.1.7",
+    "sass-loader": "^16.0.4",
     "style-loader": "^3.3.4"
   },
   "keywords": [],
@@ -40,6 +42,8 @@
     "electron-squirrel-startup": "^1.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^7.0.2"
+    "react-dropzone": "^14.3.5",
+    "react-router-dom": "^7.0.2",
+    "react-simple-wysiwyg": "^3.2.0"
   }
 }

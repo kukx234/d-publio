@@ -1,0 +1,47 @@
+.menupage-container {
+    margin: 16px;
+    padding: 24px;
+    width: 100%;
+
+    >h1 {
+        margin: 0;
+        color: #233044;
+    }
+
+    svg {
+        path {
+            fill: #1E1E1E;
+        }
+    }
+
+    .no-category-cont {
+        margin-top: 16px;
+        max-width: 305px;
+        width: 100%;
+        border-radius: 16px;
+        border: 1px solid #DADFE4;
+        background: #FFF;
+
+        .no-category-inner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-radius: 12px;
+            margin: 24px;
+            gap: 8px;
+            background: #F8F9FA;
+            padding: 40px 24px;
+
+            *:not(:last-child) {
+                margin-bottom: 24px;
+            }
+
+            span {
+                font-weight: 700;
+                font-size: 16px;
+                line-height: 22px;
+                text-align: center;
+            }
+        }
+    }
+}

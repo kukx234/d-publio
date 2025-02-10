@@ -1,44 +1,72 @@
-//utils/get_model_fields/Order
 import React, { useState } from "react";
-const axios = require('axios');
+import FormInput from "./form_components/FormInput.jsx";
+import FormCheckbox from "./form_components/FormCheckbox.jsx";
+import FormTextEditor from "./form_components/FormTextEditor.jsx";
+import FormImportImage from "./form_components/FormImportImage.jsx";
 
-const FormFields = (fields, default_values = {}, onSubmit) => {
-    const [form_data, setFormData] = useState(
-        fields.reduce((acc, field) => {
-          acc[field.name] = default_values[field.name] || '';
-          return acc;
-        }, {})
-    );
+const FormFields = ({fields, default_values = {}, onSubmit}) => {
+    const [form_data, setFormData] = useState(default_values);
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
+        const { name, value, type, checked } = e.target;
+        
+        if (type === 'checkbox') {
+          setFormData({ ...form_data, [name]: checked });
+          return;
+        }
+        
         setFormData({ ...form_data, [name]: value });
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onSubmit(formData); // Pass form data to the parent
+        onSubmit(form_data); // Pass form data to the parent
     };
 
-
     return (
-        <form onSubmit={handleSubmit}>
-          {fields.map((field) => (
-            <div key={field.name} style={{ marginBottom: '10px' }}>
-              <label>
-                {field.label}:
-                <input
-                  type={field.type || 'text'}
-                  name={field.name}
-                  //placeholder={field.placeholder}
-                  value={form_data[field.name]}
-                  onChange={handleChange}
+      <form onSubmit={handleSubmit}>
+        <div>
+          {Object.keys(fields).map((field_key) => {
+            const field = fields[field_key];
+            return (
+              field.type === 'image' ? (
+                <FormImportImage 
+                  key={field.code} 
+                  field_name={field.name} 
+                  input_value={form_data[field.code] || ''} 
+                  onChange={() => {}} //TODO kako ćemo slike ubacivati u formu
+                  label_name={field.name || 'Unknown'}
                 />
-              </label>
-            </div>
-          ))}
-          <button type="submit">Submit</button>
-        </form>
+              ) : field.type === 'texteditor' ? (
+                <FormTextEditor 
+                  key={field.code} 
+                  field_name={field.name} 
+                  input_value={form_data[field.code] || ''} 
+                  onChange={handleChange} 
+                  label_name={field.name || 'Unknown'}  />
+              ) : field.type === 'checkbox' ? (
+                <FormCheckbox 
+                  key={field.code}
+                  label_name={field.name || 'Unknown'}
+                  field_name={field.code || ''}
+                  type={field.type}
+                  input_value={form_data[field.code] || 0}
+                  on_change={handleChange}
+                />
+              ) : (
+                <FormInput
+                  key={field.code}
+                  label_name={field.name || 'Unknown'}
+                  field_name={field.code || ''}
+                  type={field.type || 'text'}
+                  input_value={form_data[field.code] || ''}
+                  on_change={handleChange}
+                />
+              )
+            );
+          })}
+        </div>
+      </form>
     );
 }
 
