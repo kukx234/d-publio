@@ -7,4 +7,4 @@ contextBridge.exposeInMainWorld('api', {
     fetchData: (api_url) => ipcRenderer.invoke('fetchData', api_url),
     postData: (api_url, data) => ipcRenderer.invoke('postData', api_url, data)
     //addData: () => {} ...
-  });
+});

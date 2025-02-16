@@ -1,11 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect} from "react";
 import FormInput from "./form_components/FormInput.jsx";
 import FormCheckbox from "./form_components/FormCheckbox.jsx";
 import FormTextEditor from "./form_components/FormTextEditor.jsx";
 import FormImportImage from "./form_components/FormImportImage.jsx";
 
-const FormFields = ({fields, default_values = {}, onSubmit}) => {
+const FormFields = ({fields, default_values = {}, onSubmit, form_submited}) => {
     const [form_data, setFormData] = useState(default_values);
+
+    useEffect(() => {
+      if (form_submited) {
+        onSubmit(form_data); // Pass form data to the parent
+      }
+    }, [form_submited]);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -18,13 +24,8 @@ const FormFields = ({fields, default_values = {}, onSubmit}) => {
         setFormData({ ...form_data, [name]: value });
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        onSubmit(form_data); // Pass form data to the parent
-    };
-
     return (
-      <form onSubmit={handleSubmit}>
+      <form>
         <div>
           {Object.keys(fields).map((field_key) => {
             const field = fields[field_key];
@@ -40,9 +41,9 @@ const FormFields = ({fields, default_values = {}, onSubmit}) => {
               ) : field.type === 'texteditor' ? (
                 <FormTextEditor 
                   key={field.code} 
-                  field_name={field.name} 
+                  field_name={field.code} 
                   input_value={form_data[field.code] || ''} 
-                  onChange={handleChange} 
+                  on_change={handleChange} 
                   label_name={field.name || 'Unknown'}  />
               ) : field.type === 'checkbox' ? (
                 <FormCheckbox 
@@ -68,6 +69,6 @@ const FormFields = ({fields, default_values = {}, onSubmit}) => {
         </div>
       </form>
     );
-}
+};
 
 export default FormFields;
