@@ -242,3 +242,28 @@ body {
         opacity: 0;
     }
 }
+
+.context-menu {
+    position: absolute;
+    border: 1px solid #DADFE4;
+    background: #F8F9FA;
+    border-radius: 12px;
+    
+    >span {
+        display: block;
+        padding: 8px 20px;
+        font-weight: 700;
+        font-size: 14px;
+        line-height: 22px;
+        cursor: pointer;
+        border-bottom: 0.5px solid #DADFE4;
+
+        :last-child {
+            border-bottom: none;
+        }
+    }
+}
+
+.red-text {
+    color: #FF5D5B;
+}
