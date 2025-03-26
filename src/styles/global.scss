@@ -60,6 +60,55 @@ body {
     border-radius: 16px;
     border: 1px solid #DADFE4;
     width: 100%;
+
+    h1 {
+        margin: 0;
+        margin-bottom: 16px;
+    }
+
+    .search-container {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 16px;
+        margin-bottom: 16px;
+
+        input {
+            max-width: 358px;
+            width: 100%;
+            height: 50px;
+            border: 1px solid #BBC6CF;
+            border-radius: 16px;
+            padding-left: 16px;
+        }
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+
+        th, td {
+            padding: 16px;
+            text-align: left;
+        }
+
+        th {
+            color: #BBC6CF;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #F2F5F7;
+        }
+
+        thead {
+            border-bottom: 2px solid #BBC6CF;
+        }
+        
+        tbody {
+            td {
+                color: #566875;
+            }
+        }
+    }
 }
 
 .primary-btn {
@@ -87,7 +136,7 @@ body {
     backdrop-filter: blur(2px);
 
     .form-inner {
-        height: calc(100% - 68px);
+        height: calc(100% - 88px);
         background: #fff;
         position: absolute;
         right: 0;
@@ -96,7 +145,7 @@ body {
         border: 2px solid #fff;
         max-width: 400px;
         width: 100%;
-        padding: 32px;
+        padding: 52px 32px 32px 32px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -104,6 +153,11 @@ body {
         .form-title {
             display: flex;
             justify-content: space-between;
+            position: absolute;
+            z-index: 2;
+            top: 20px;
+            left: 30px;
+            right: 30px;
 
             >h3 {
                 font-size: 30px;
@@ -151,6 +205,11 @@ body {
 
         .input-cont {
             margin-top: 24px;
+        }
+
+        .form-inner-fields {
+            height: calc(100% - 150px);
+            overflow: auto;
         }
     }
 }
@@ -266,4 +325,81 @@ body {
 
 .red-text {
     color: #FF5D5B;
+}
+
+.popup-cont {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(5px);
+
+    .popup {
+        background-color: #fff;
+        padding: 24px 32px;
+        border-radius: 24px;
+        border: 1px #DADFE4 solid;
+
+        .title {
+            font-weight: 700;
+            font-size: 18px;
+            line-height: 22px;
+            margin: 0;
+            color: #233044;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            text-align: center;
+            margin: 0;
+            margin-bottom: 24px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 8px;
+
+            > * {
+                flex: 1;
+            }
+
+            .delete-btn {
+                background: red;
+            }
+
+            .cancel-btn {
+                background: transparent;
+                color: #233044;
+                border: 1px #DADFE4 solid;
+            }
+        }
+    }
+}
+
+
+::-webkit-scrollbar {
+    width: 0px;
+}
+
+.hidden {
+    visibility: hidden;
+    height: 0px;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+}
+
+.delete-product-btn {
+    font-family: DM Sans;
+    font-weight: 300;
+    font-size: 16px;
+    line-height: 22px;
+    letter-spacing: 0%;
+    color: #FF5D5B;
+    background: unset;
+    margin: 0 auto;
 }

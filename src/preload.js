@@ -5,6 +5,8 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('api', {
     fetchData: (api_url) => ipcRenderer.invoke('fetchData', api_url),
-    postData: (api_url, data) => ipcRenderer.invoke('postData', api_url, data)
+    postData: (api_url, data) => ipcRenderer.invoke('postData', api_url, data),
+    putData: (api_url, data) => ipcRenderer.invoke('putData', api_url, data),
+    deleteData: (api_url, data) => ipcRenderer.invoke('deleteData', api_url, data)
     //addData: () => {} ...
 });

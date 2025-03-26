@@ -24,6 +24,28 @@ const publioApiHandlers = () => {
             console.error('Error in postData handler:', error.message);
             throw error;
         }
+    }),
+
+    //put request
+    ipcMain.handle('putData', async (event, api_url, data) => {
+        try {
+            const response = await axios.put(BASE_URL + api_url, data);
+            return response.data;
+        } catch (error) {
+            console.error('Error in putData handler:', error.message);
+            throw error;
+        }
+    })
+
+    //delete request
+    ipcMain.handle('deleteData', async (event, api_url, data) => {
+        try {
+            const response = await axios.delete(BASE_URL + api_url, data);
+            return response.data;
+        } catch (error) {
+            console.error('Error in deleteData handler:', error.message);
+            throw error;
+        }
     })
 }
 

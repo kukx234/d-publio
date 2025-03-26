@@ -4,39 +4,51 @@ import CategoryForm from './CategoryForm.jsx';
 import MenuIcon from '../../components/icons/MenuIcon.jsx';
 import PrimaryButton from '../../components/PrimaryButton.jsx';
 import RightClickMenu from '../../components/RightClickMenu.jsx';
+import Popup from '../../components/Popup.jsx';
 
-const CategoryList = ({ position=0, level=1, updateCategoriesPosition, setCategoryId }) => {
+const CategoryList = ({ position=0, level=1, updateCategoriesPosition, setCategory }) => {
   	const [category_list, setCategories] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [open_form, setOpenForm] = useState(false);
 	const [context_menu_data, setContextMenuData] = useState({});
+	const [popup_content, setPopupContent] = useState({});
+	const [hide_list, setHideList] = useState(false);
 
 	useEffect(() => {
 		if (!open_form) {
-			const fetchCategories = async () => {
-				try {
-					let query_string = `categories/all/?level=${level}`;
-					if (level > 1) {
-						query_string += `&position=${position}`;
-					}
-					const categories = await window.api.fetchData(query_string);
-					setCategories(categories);
-				} catch (err) {
-					console.error('Error fetching categories:', err);
-				} finally {
-					setLoading(false);
-				}
-			};
-	
 			fetchCategories();  
 		}
 	}, [open_form, position]);
+
+	const fetchCategories = async (p=position, l=level) => {
+		let categories = [];
+		try {
+			let query_string = `categories/all/?level=${l}`;
+			if (l > 1) {
+				query_string += `&position=${p}`;
+			}
+			categories = await window.api.fetchData(query_string);
+			setCategories(categories);
+		} catch (err) {
+			console.error('Error fetching categories:', err);
+		} finally {
+			setLoading(false);
+		}
+
+		return categories;
+	};
 
 	const closeForm = () => {
 		setOpenForm(false);
 	}
 
-	const openCreateCategoryForm = () => {
+	const openCategoryForm = (edit=false) => {
+		if (edit) {
+			closeContextMenu();
+		} else {
+			setContextMenuData({});
+		}
+		
 		setOpenForm(true);
 	}
 
@@ -58,13 +70,13 @@ const CategoryList = ({ position=0, level=1, updateCategoriesPosition, setCatego
 		}
 		const subcategories = await window.api.fetchData(query_string);
 		if(subcategories.length > 0) {
-			setCategoryId(0);
+			setCategory({});
 			updateCategoriesPosition(level, category.position);
 			return;
 		}
 
 		updateCategoriesPosition(category.level, category.position, true);
-		setCategoryId(category_id);
+		setCategory(category);
 	}
 
 	const handleRightClick = (event) => {
@@ -73,31 +85,85 @@ const CategoryList = ({ position=0, level=1, updateCategoriesPosition, setCatego
 			return;
 		}
 
+		const current_category = category_list.find(category => category._id == category_id);
+		const menu_width = document.querySelector(".menu-container").offsetWidth;
 		setContextMenuData({
-			category_id: category_id,
-			x: event.pageX,
+			open_menu: true,
+			category: current_category,
+			x: event.pageX - menu_width,
 			y: event.pageY
 		});
 	}
 
 	const closeContextMenu = () => {
-		setContextMenuData({});
+		setContextMenuData({
+			...context_menu_data,
+			open_menu: false
+		});
 	}
 
-	const editCategory = () => {
-		console.log('uredi kategoriju');
-		//treba otvoriti formu i trebe formu popuniti već s podatcima
+	const updateCategory = async (form_data, category_id) => {
+		try {
+			const put_response = await window.api.putData(`categories/${category_id}`, form_data);
+			closeForm();
+		  } catch (err) {
+			console.error('Error creating / update category:', err);
+		  }
 	}
 
-	const deleteCategory = () => {
-		console.log('obriši kategoriju');
-		//TODO treba prvo prikazati jedan popup dal je siguran da želi obrisati i onda pokrenuti brisanje
+	const deleteCategory = async (confirm_delete=false) => {
+		if (!confirm_delete) {
+			closeContextMenu();
+			setPopupContent({
+				open_popup: true,
+				content: {
+					title: "Jeste li sigurni da želite obrisati kategoriju?",
+					subtitle: context_menu_data.category.title + " (" + context_menu_data.category.code +")",
+					text: "Naslov kategorije ( šifra )",
+					primary_btn: {
+						text: "Obriši",
+						btnFn: () => { deleteCategory(true) },
+						class_name: "delete-btn",
+					},
+					secondary_btn: {
+						text: "Odustani",
+						btnFn: () => { setPopupContent({}) },
+						class_name: "cancel-btn"
+					}
+				}
+			});
+			return;
+		}
+
+		try {
+			const deleted = await window.api.deleteData('categories/' + context_menu_data.category._id);
+			let position = context_menu_data.category.position.replace(/\.[^.]+$/, ""); 
+			const categories = await fetchCategories(position, context_menu_data.category.level);
+			setPopupContent({});
+			if (categories.length < 1) {
+				setHideList(true);
+			}
+		} catch (error) {
+			console.log('Error deleting category: ' + error);
+		}
 	}
+
+	const createCategory = async (form_data) => {
+		try {
+		  const post_response = await window.api.postData('categories/', form_data);
+		  //TODO dohvati kategorije s istom pozicijom i levelom
+		  closeForm();
+		} catch (err) {
+		  console.error('Error creating / update category:', err);
+		}
+	};
 
 	const context_menu_options = [
-		{label: 'Uredi kategoriju', contextFn: editCategory},
-		{label: 'Obriši kategoriju', contextFn: deleteCategory, class_name:"red-text"}
+		{label: 'Uredi kategoriju', contextFn: () => { openCategoryForm(true) }},
+		{label: 'Obriši kategoriju', contextFn: () => { deleteCategory(false) }, class_name:"red-text"}
 	]
+
+	if (hide_list) return '';
 
 	if (loading) return <h1>LOADING ...</h1>
 
@@ -117,16 +183,35 @@ const CategoryList = ({ position=0, level=1, updateCategoriesPosition, setCatego
 						</li>
 					))
 					}
-					{ level === 1 && <PrimaryButton class_name="primary-btn btn_list" text="Kreiraj Kategoriju" on_click={openCreateCategoryForm}/> }
+					{ 
+						level === 1 && 
+						<PrimaryButton 
+							class_name="primary-btn btn_list" 
+							text="Kreiraj Kategoriju" 
+							on_click={openCategoryForm}
+						/> 
+					}
 				</ul>
-				{ open_form && <CategoryForm closeForm={closeForm}/> }
 				{ 
-				Object.keys(context_menu_data).length > 0 && 
+					open_form && 
+					<CategoryForm 
+						category={context_menu_data.category || {}} 
+						updateCategory={updateCategory} 
+						createCategory={createCategory} 
+						closeForm={closeForm}
+					/> 
+				}
+				{ 
+				(context_menu_data.open_menu || false) && 
 				<RightClickMenu 
 					options={context_menu_options} 
 					x={context_menu_data.x} 
 					y={context_menu_data.y} 
 					handleCloseMenu={closeContextMenu} />
+				}
+				{
+					(popup_content.open_popup || false) &&
+					<Popup content={popup_content.content} />
 				}
 			</div>
 		);
@@ -137,11 +222,18 @@ const CategoryList = ({ position=0, level=1, updateCategoriesPosition, setCatego
 			<div className='no-category-inner'>
 				<MenuIcon height="51" width="51"/>
 				<span>Nema kategorija</span>
-				<PrimaryButton text="Kreiraj Kategoriju" on_click={openCreateCategoryForm}/>
+				<PrimaryButton text="Kreiraj Kategoriju" on_click={openCategoryForm}/>
 				<span>ILI</span>
 				<PrimaryButton text="Import Excel" />
 			</div>
-			{ open_form && <CategoryForm closeForm={closeForm} /> }
+			{ 
+				open_form && 
+				<CategoryForm  
+					updateCategory={updateCategory} 
+					createCategory={createCategory} 
+					closeForm={closeForm}
+				/> 
+			}
 		</div>
 	);
 }

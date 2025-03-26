@@ -5,7 +5,7 @@ import ProductList from '../product/ProductList.jsx';
 import '../../styles/menu.scss';
 
 const Menu = () => {
-    const [category_id, setCategoryId] = useState(0);
+    const [category, setCategory] = useState(0);
     const [product_id, setProductid] = useState(0);
     const [categories_position, setCategoriesPosition] = useState({position_1: { level: 1, position: 0}});
 
@@ -64,12 +64,12 @@ const Menu = () => {
                         level={category_position.level} 
                         position={category_position.position}
                         updateCategoriesPosition={updateCategoriesPosition}
-                        setCategoryId={setCategoryId}
+                        setCategory={setCategory}
                     />
                     )
                 })
                 }   
-                { category_id != 0 && <ProductList /> } 
+                { Object.keys(category).length != 0 && <ProductList category={category} /> } 
             </div>
         </div>
     )
