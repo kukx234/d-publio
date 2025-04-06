@@ -3,6 +3,8 @@ const axios = require('axios');
 import PrimaryButton from '../../components/PrimaryButton.jsx';
 import UserForm from './UserForm.jsx';
 import Popup from '../../components/Popup.jsx';
+import Table from '../../components/TableComponent.jsx';
+import Notification from '../../components/Notification.jsx';
 
 const UserList = () => {
   	const [users_list, setUsers] = useState([]);
@@ -11,6 +13,7 @@ const UserList = () => {
     const [open_form, setOpenForm] = useState(false);
     const [user, setUser] = useState({});
     const [popup_content, setPopupContent] = useState({});
+	const [notifications, setNotifications] = useState([]);
 
     const fetchUsers = async () => {
         try {
@@ -41,9 +44,28 @@ const UserList = () => {
 		setOpenForm(false);
 	}
 
+	const newNotification = (data) => {
+        const new_notification = {
+            id: data.id,
+            title: data.title, 
+            subtitle: data.subtitle ?? '', 
+            classes: data.clases ?? '' 
+        };
+
+        setNotifications((prev) => [...prev, new_notification]);
+        setTimeout(() => {
+            setNotifications((prev) => prev.filter(notification => notification.id !== new_notification.id));
+        }, 3000);
+    }
+
 	const createUser = async (form_data) => {
 		try {
-		  const post_response = await window.api.postData('users/', form_data);
+			const post_response = await window.api.postData('users/', form_data);
+			newNotification({
+				id: post_response._id,
+				title: 'Korisnik uspiješno kreiran',
+				subtitle: post_response.first_name + ' ' + post_response.last_name
+			});
 		  closeForm();
 		} catch (err) {
 		  console.error('Error creating / update user:', err);
@@ -53,6 +75,11 @@ const UserList = () => {
 	const updateUser = async (form_data, user_id) => {
 		try {
 			const put_response = await window.api.putData(`users/${user_id}`, form_data);
+			newNotification({
+				id: put_response._id,
+				title: 'Korisnik uspiješno ažuriran',
+				subtitle: put_response.first_name + ' ' + put_response.last_name
+			});
 			closeForm();
 		} catch (err) {
 			console.error('Error creating / update user:', err);
@@ -85,6 +112,11 @@ const UserList = () => {
 
 		try {
 			const deleted = await window.api.deleteData('users/' + user._id);
+			newNotification({
+				id: user._id,
+				title: 'Korisnik uspiješno obrisan',
+				subtitle: user.first_name + ' ' + user.last_name
+			});
 			setPopupContent({});
             fetchUsers();
 		} catch (error) {
@@ -96,8 +128,17 @@ const UserList = () => {
         (user.first_name + ' ' + user.last_name).toLowerCase().includes(search.toLowerCase()) 
     );
 
+    const columns = [
+        { key: "name", label: "Ime Prezime" , render: (data) => { return data.first_name + ' ' + data.last_name }},
+        { key: "email", label: "Email" },
+        { key: "mobile", label: "Telefon", render: (data) => { return '+385' + data.mobile }},
+        { key: "createdAt", label: "Aktivan od", render: (data) => { return new Date(data.createdAt).toLocaleDateString("en-GB") }},
+        { key: "status", label: "Status", render: (data) => { return data.visible ? "🟩 Active" : "🟥 Deactivated" } }
+    ];
+
   if (loading) return <h1>LOADING ...</h1>
   return (
+    <div className='page-wrapper'>
 		<div className='page-container'>
 			<h1>Lista korisnika</h1>
             <div className="search-container">
@@ -114,36 +155,13 @@ const UserList = () => {
                 /> 
             </div>
 
-			 <table>
-                <thead>
-                    <tr>
-                        <th>Ime Prezime</th>
-                        <th>Email</th>
-                        <th>Telefon</th>
-                        <th>Aktivan od</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {filteredUsers.map((user) => (
-                        <tr 
-                            key={user._id}
-                            onClick={() => { openUserForm(user._id) }}
-                            >
-                            <td><strong>{user.first_name  + ' ' + user.last_name}</strong></td>
-                            <td>{user.email}</td>
-                            <td>+385 {user.mobile}</td>
-                            <td>{new Date(user.createdAt).toLocaleDateString("en-GB")}</td>
-                            <td>
-                                <span className="status">
-                                    {user.visible ? "🟩 Active" : "🟥 Deactivated"}
-                                </span>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-
+            <Table
+                columns={columns} 
+                data={filteredUsers} 
+                maxHeightOffset={80}
+                onRowClick={openUserForm}
+            />
+			
             { 
                 open_form &&
                 <UserForm 
@@ -155,10 +173,14 @@ const UserList = () => {
                 /> 
             }
             {
-					(popup_content.open_popup || false) &&
-					<Popup content={popup_content.content} />
-				}
+				(popup_content.open_popup || false) &&
+				<Popup content={popup_content.content} />
+			}
+			{
+                notifications.length > 0 && <Notification content={notifications} />
+            }
 		</div>
+    </div>    
   );
 }
 

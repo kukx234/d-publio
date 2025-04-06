@@ -6,14 +6,14 @@ import PrimaryButton from '../../components/PrimaryButton.jsx';
 import RightClickMenu from '../../components/RightClickMenu.jsx';
 import Popup from '../../components/Popup.jsx';
 
-const CategoryList = ({ position=0, level=1, updateCategoriesPosition, setCategory }) => {
+const CategoryList = ({ position=0, level=1, updateCategoriesPosition, setCategory, newNotification=()=>{} }) => {
   	const [category_list, setCategories] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [open_form, setOpenForm] = useState(false);
 	const [context_menu_data, setContextMenuData] = useState({});
 	const [popup_content, setPopupContent] = useState({});
 	const [hide_list, setHideList] = useState(false);
-
+	
 	useEffect(() => {
 		if (!open_form) {
 			fetchCategories();  
@@ -105,6 +105,11 @@ const CategoryList = ({ position=0, level=1, updateCategoriesPosition, setCatego
 	const updateCategory = async (form_data, category_id) => {
 		try {
 			const put_response = await window.api.putData(`categories/${category_id}`, form_data);
+			newNotification({
+                id: put_response._id,
+                title: 'Kategorija uspiješno ažurirana',
+                subtitle: put_response.title
+            });
 			closeForm();
 		  } catch (err) {
 			console.error('Error creating / update category:', err);
@@ -139,6 +144,12 @@ const CategoryList = ({ position=0, level=1, updateCategoriesPosition, setCatego
 			const deleted = await window.api.deleteData('categories/' + context_menu_data.category._id);
 			let position = context_menu_data.category.position.replace(/\.[^.]+$/, ""); 
 			const categories = await fetchCategories(position, context_menu_data.category.level);
+
+			newNotification({
+                id: context_menu_data.category._id,
+                title: 'Kategorija uspiješno obrisana',
+                subtitle: context_menu_data.category.title
+            });
 			setPopupContent({});
 			if (categories.length < 1) {
 				setHideList(true);
@@ -151,7 +162,12 @@ const CategoryList = ({ position=0, level=1, updateCategoriesPosition, setCatego
 	const createCategory = async (form_data) => {
 		try {
 		  const post_response = await window.api.postData('categories/', form_data);
-		  //TODO dohvati kategorije s istom pozicijom i levelom
+
+		  newNotification({
+			id: post_response._id,
+			title: 'Kategorija uspiješno kreirana',
+			subtitle: post_response.title
+		  });
 		  closeForm();
 		} catch (err) {
 		  console.error('Error creating / update category:', err);

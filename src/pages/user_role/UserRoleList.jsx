@@ -3,6 +3,8 @@ const axios = require('axios');
 import PrimaryButton from '../../components/PrimaryButton.jsx';
 import UserRoleForm from './UserRoleForm.jsx';
 import Popup from '../../components/Popup.jsx';
+import Notification from '../../components/Notification.jsx';
+import Table from '../../components/TableComponent.jsx';
 
 const UserRoleList = () => {
   	const [user_roles_list, setUserRoles] = useState([]);
@@ -11,6 +13,7 @@ const UserRoleList = () => {
     const [open_form, setOpenForm] = useState(false);
     const [user_role, setUserRole] = useState({});
     const [popup_content, setPopupContent] = useState({});
+    const [notifications, setNotifications] = useState([]);
 
     const fetchUserRoles = async () => {
         try {
@@ -41,10 +44,29 @@ const UserRoleList = () => {
 		setOpenForm(false);
 	}
 
+    const newNotification = (data) => {
+        const new_notification = {
+            id: data.id,
+            title: data.title, 
+            subtitle: data.subtitle ?? '', 
+            classes: data.clases ?? '' 
+        };
+
+        setNotifications((prev) => [...prev, new_notification]);
+        setTimeout(() => {
+            setNotifications((prev) => prev.filter(notification => notification.id !== new_notification.id));
+        }, 3000);
+    }
+
 	const createUserRole = async (form_data) => {
 		try {
-		  const post_response = await window.api.postData('roles/', form_data);
-		  closeForm();
+            const post_response = await window.api.postData('roles/', form_data);
+            newNotification({
+                id: post_response._id,
+                title: 'Rola uspiješno kreirana',
+                subtitle: post_response.title
+            });
+		    closeForm();
 		} catch (err) {
 		  console.error('Error creating / update user role:', err);
 		}
@@ -53,6 +75,11 @@ const UserRoleList = () => {
 	const updateUserRole = async (form_data, user_role_id) => {
 		try {
 			const put_response = await window.api.putData(`roles/${user_role_id}`, form_data);
+            newNotification({
+                id: user_role_id,
+                title: 'Rola uspiješno ažurirana',
+                subtitle: put_response.title
+            });
 			closeForm();
 		} catch (err) {
 			console.error('Error creating / update user role:', err);
@@ -85,6 +112,11 @@ const UserRoleList = () => {
 
 		try {
 			const deleted = await window.api.deleteData('roles/' + user_role._id);
+            newNotification({
+                id: user_role._id,
+                title: 'Rola uspiješno obrisana',
+                subtitle: user_role.title
+            });
 			setPopupContent({});
             fetchUserRoles();
 		} catch (error) {
@@ -96,9 +128,16 @@ const UserRoleList = () => {
         role.title.toLowerCase().includes(search.toLowerCase()) 
     );
 
+    const columns = [
+        { key: "code", label: "Šifra" },
+        { key: "title", label: "Naziv" },
+        { key: "createdAt", label: "Kreirano", render: (data) => { return new Date(data.createdAt).toLocaleDateString("en-GB") }}
+    ];
+
   if (loading) return <h1>LOADING ...</h1>
   return (
-		<div className='page-container'>
+    <div className='page-wrapper'>
+        <div className='page-container'>
 			<h1>Lista korisnik rola</h1>
             <div className="search-container">
                 <input
@@ -114,28 +153,13 @@ const UserRoleList = () => {
                 /> 
             </div>
 
-			 <table>
-                <thead>
-                    <tr>
-                        <th>Šifra</th>
-                        <th>Naziv</th>
-                        <th>Aktivan od</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {filteredUserRoles.map((role) => (
-                        <tr 
-                            key={role._id}
-                            onClick={() => { openUserRoleForm(role._id) }}
-                            >
-                            <td><strong>{role.title}</strong></td>
-                            <td>{role.code}</td>
-                            <td>{new Date(role.createdAt).toLocaleDateString("en-GB")}</td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-
+            <Table
+                columns={columns} 
+                data={filteredUserRoles} 
+                maxHeightOffset={80}
+                onRowClick={openUserRoleForm}
+            />
+           
             { 
                 open_form &&
                 <UserRoleForm 
@@ -147,10 +171,14 @@ const UserRoleList = () => {
                 /> 
             }
             {
-					(popup_content.open_popup || false) &&
-					<Popup content={popup_content.content} />
-				}
+                (popup_content.open_popup || false) &&
+                <Popup content={popup_content.content} />
+            }
+            {
+                notifications.length > 0 && <Notification content={notifications} />
+            }
 		</div>
+    </div>	
   );
 }
 

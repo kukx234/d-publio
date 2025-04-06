@@ -3,11 +3,13 @@ const axios = require('axios');
 import CategoryList from '../category/CategoryList.jsx';
 import ProductList from '../product/ProductList.jsx';
 import '../../styles/menu.scss';
+import Notification from '../../components/Notification.jsx';
 
 const Menu = () => {
     const [category, setCategory] = useState(0);
     const [product_id, setProductid] = useState(0);
     const [categories_position, setCategoriesPosition] = useState({position_1: { level: 1, position: 0}});
+    const [notifications, setNotifications] = useState([]);
 
     const updateCategoriesPosition = (level, position, only_remove=false) => {
         
@@ -50,27 +52,45 @@ const Menu = () => {
         })
     }
 
+    const newNotification = (data) => {
+        const new_notification = {
+            id: data.id,
+            title: data.title, 
+            subtitle: data.subtitle ?? '', 
+            classes: data.clases ?? '' 
+        };
+
+        setNotifications((prev) => [...prev, new_notification]);
+        setTimeout(() => {
+            setNotifications((prev) => prev.filter(notification => notification.id !== new_notification.id));
+        }, 3000);
+    }
+
     const categories = Object.values(categories_position);
 
     return (
         <div className='menupage-container'>
-            <h1>Menu</h1>
+            <h1>Meni</h1>
             <div className="main-menu-cont">
                 {
 				categories.map((category_position, index) => {
                     return (
                         <CategoryList 
-                        key={index}
-                        level={category_position.level} 
-                        position={category_position.position}
-                        updateCategoriesPosition={updateCategoriesPosition}
-                        setCategory={setCategory}
-                    />
+                            key={index}
+                            level={category_position.level} 
+                            position={category_position.position}
+                            updateCategoriesPosition={updateCategoriesPosition}
+                            setCategory={setCategory}
+                            newNotification={newNotification}
+                        />
                     )
                 })
                 }   
-                { Object.keys(category).length != 0 && <ProductList category={category} /> } 
+                { Object.keys(category).length != 0 && <ProductList category={category} newNotification={newNotification} /> } 
             </div>
+            {
+                notifications.length > 0 && <Notification content={notifications} />
+            }
         </div>
     )
 }

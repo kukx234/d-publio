@@ -98,6 +98,7 @@ const FormFields = ({fields, default_values = {}, onSubmit, form_submited}) => {
                     type={field.type || 'text'}
                     options={getSelectOptions(field)}
                     on_change={handleChange}
+                    selected={{value:form_data?.role?._id || '', label:form_data?.role?.title || ''}} //TODO treba sreditii za ostala autocomplete polja
                 />
               ) : (
                 <FormInput

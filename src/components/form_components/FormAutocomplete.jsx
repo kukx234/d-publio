@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import Select from "react-select";
 
-const FormAutocomplete = ({ label_name, field_name, type, options, on_change, class_name='form-default-input' }) => {
-    const [selected_option, setSelectedOption] = useState(null);
-
+const FormAutocomplete = ({ label_name, field_name, type, options, on_change, class_name='form-default-input', selected }) => {
+    const [selected_option, setSelectedOption] = useState(selected);
+    
     const handleChange = (data) => {
         setSelectedOption(data);
         on_change(false, {

@@ -5,7 +5,7 @@ import PrimaryButton from '../../components/PrimaryButton.jsx';
 import ProductForm from './ProductForm.jsx';
 import Popup from '../../components/Popup.jsx';
 
-const ProductList = ({category}) => {
+const ProductList = ({category, newNotification=()=>{}}) => {
 	const [products_list, setProducts] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [open_form, setOpenForm] = useState(false);
@@ -27,7 +27,7 @@ const ProductList = ({category}) => {
 
 	useEffect(() => {
 		fetchProducts();  
-	}, [open_form]);
+	}, [open_form, category]);
 
 	const openProductForm = (product_id=false) => {
 		if (product_id) {
@@ -46,6 +46,11 @@ const ProductList = ({category}) => {
 	const createProduct = async (form_data) => {
 		try {
 		  const post_response = await window.api.postData('products/', form_data);
+		  newNotification({
+			id: post_response._id,
+			title: 'Proizvod uspiješno kreiran',
+			subtitle: post_response.title
+		  });
 		  closeForm();
 		} catch (err) {
 		  console.error('Error creating / update product:', err);
@@ -55,6 +60,11 @@ const ProductList = ({category}) => {
 	const updateProduct = async (form_data, product_id) => {
 		try {
 			const put_response = await window.api.putData(`products/${product_id}`, form_data);
+			newNotification({
+				id: put_response._id,
+				title: 'Proizvod uspiješno ažuriran',
+				subtitle: put_response.title
+			  });
 			closeForm();
 		} catch (err) {
 			console.error('Error creating / update product:', err);
@@ -87,6 +97,11 @@ const ProductList = ({category}) => {
 
 		try {
 			const deleted = await window.api.deleteData('products/' + product._id);
+			newNotification({
+				id: product._id,
+				title: 'Proizvod uspiješno obrisan',
+				subtitle: product.title
+			  });
 			setPopupContent({});
 			fetchProducts();
 		} catch (error) {

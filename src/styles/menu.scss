@@ -9,12 +9,6 @@
         color: #233044;
     }
 
-    svg {
-        path {
-            fill: #1E1E1E;
-        }
-    }
-
     .no-category-cont {
         margin-top: 16px;
         max-width: 305px;
@@ -22,6 +16,12 @@
         border-radius: 16px;
         border: 1px solid #DADFE4;
         background: #FFF;
+
+        svg {
+            path {
+                fill: #1E1E1E;
+            }
+        }
 
         .no-category-inner {
             display: flex;
