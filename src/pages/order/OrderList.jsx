@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 const axios = require('axios');
 import Table from '../../components/TableComponent.jsx';
+import Loader from '../../components/Loader.jsx';
 
 const OrderList = () => {
   	const [orders_list, setOrders] = useState([]);
@@ -53,7 +54,7 @@ const OrderList = () => {
         { key: "createdAt", label: "Aktivan od", render: (data) => { return new Date(data.createdAt).toLocaleDateString("en-GB") }},
     ];
 
-  if (loading) return <h1>LOADING ...</h1>
+  if (loading) return <div className='loader-cont'><Loader/></div>
   return (
 	<div className='page-wrapper'>
 		<div className='page-container'>

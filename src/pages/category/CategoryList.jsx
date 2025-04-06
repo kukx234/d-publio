@@ -5,6 +5,7 @@ import MenuIcon from '../../components/icons/MenuIcon.jsx';
 import PrimaryButton from '../../components/PrimaryButton.jsx';
 import RightClickMenu from '../../components/RightClickMenu.jsx';
 import Popup from '../../components/Popup.jsx';
+import Loader from '../../components/Loader.jsx';
 
 const CategoryList = ({ position=0, level=1, updateCategoriesPosition, setCategory, newNotification=()=>{} }) => {
   	const [category_list, setCategories] = useState([]);
@@ -181,7 +182,7 @@ const CategoryList = ({ position=0, level=1, updateCategoriesPosition, setCatego
 
 	if (hide_list) return '';
 
-	if (loading) return <h1>LOADING ...</h1>
+	if (loading) return <div className='loader-cont'><Loader/></div>
 
 	if (category_list.length > 0) {
 		return (

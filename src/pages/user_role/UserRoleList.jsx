@@ -5,6 +5,7 @@ import UserRoleForm from './UserRoleForm.jsx';
 import Popup from '../../components/Popup.jsx';
 import Notification from '../../components/Notification.jsx';
 import Table from '../../components/TableComponent.jsx';
+import Loader from '../../components/Loader.jsx';
 
 const UserRoleList = () => {
   	const [user_roles_list, setUserRoles] = useState([]);
@@ -134,7 +135,7 @@ const UserRoleList = () => {
         { key: "createdAt", label: "Kreirano", render: (data) => { return new Date(data.createdAt).toLocaleDateString("en-GB") }}
     ];
 
-  if (loading) return <h1>LOADING ...</h1>
+  if (loading) return <div className='loader-cont'><Loader/></div>
   return (
     <div className='page-wrapper'>
         <div className='page-container'>

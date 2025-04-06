@@ -4,6 +4,7 @@ import MenuIcon from '../../components/icons/MenuIcon.jsx';
 import PrimaryButton from '../../components/PrimaryButton.jsx';
 import ProductForm from './ProductForm.jsx';
 import Popup from '../../components/Popup.jsx';
+import Loader from '../../components/Loader.jsx';
 
 const ProductList = ({category, newNotification=()=>{}}) => {
 	const [products_list, setProducts] = useState([]);
@@ -109,7 +110,7 @@ const ProductList = ({category, newNotification=()=>{}}) => {
 		}
 	}
 
-	if (loading) return <h1>LOADING ...</h1>
+	if (loading) return <div className='loader-cont'><Loader/></div>
 
 	if (products_list.length > 0) {
 		return (

@@ -5,6 +5,7 @@ import UserForm from './UserForm.jsx';
 import Popup from '../../components/Popup.jsx';
 import Table from '../../components/TableComponent.jsx';
 import Notification from '../../components/Notification.jsx';
+import Loader from '../../components/Loader.jsx';
 
 const UserList = () => {
   	const [users_list, setUsers] = useState([]);
@@ -136,7 +137,7 @@ const UserList = () => {
         { key: "status", label: "Status", render: (data) => { return data.visible ? "🟩 Active" : "🟥 Deactivated" } }
     ];
 
-  if (loading) return <h1>LOADING ...</h1>
+  if (loading) return <div className='loader-cont'><Loader/></div>
   return (
     <div className='page-wrapper'>
 		<div className='page-container'>
