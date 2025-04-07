@@ -114,6 +114,7 @@ const ProductList = ({category, newNotification=()=>{}}) => {
 
 	if (products_list.length > 0) {
 		return (
+			<>
 			<div className="product-list">
 				<ul>
 					{
@@ -127,29 +128,31 @@ const ProductList = ({category, newNotification=()=>{}}) => {
 						</li>
 					))
 					}
-					{
-						<PrimaryButton 
-							class_name="primary-btn btn_list" 
-							text="Dodaj Proizvod" 
-							on_click={() => {openProductForm()}}
-						/> 
-					}
 				</ul>
-				{ 
-					open_form &&
-					<ProductForm 
-						product={product} 
-						closeForm={closeForm}
-						createProduct={createProduct}
-						updateProduct={updateProduct}
-						deleteProduct={deleteProduct}
+				{
+					<PrimaryButton 
+						class_name="primary-btn btn_list" 
+						text="Dodaj Proizvod" 
+						on_click={() => {openProductForm()}}
 					/> 
 				}
-				{
-					(popup_content.open_popup || false) &&
-					<Popup content={popup_content.content} />
-				}
 			</div>
+			{ 
+				open_form &&
+				<ProductForm 
+					product={product} 
+					closeForm={closeForm}
+					createProduct={createProduct}
+					updateProduct={updateProduct}
+					deleteProduct={deleteProduct}
+				/> 
+			}
+			{
+				(popup_content.open_popup || false) &&
+				<Popup content={popup_content.content} />
+			}
+			</>
+			
 		);
 	}
 

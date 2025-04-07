@@ -176,7 +176,7 @@ const CategoryList = ({ position=0, level=1, updateCategoriesPosition, setCatego
 	};
 
 	const context_menu_options = [
-		{label: 'Uredi kategoriju', contextFn: () => { openCategoryForm(true) }},
+		{label: 'Uredi kategoriju', contextFn: () => {openCategoryForm(true)}},
 		{label: 'Obriši kategoriju', contextFn: () => { deleteCategory(false) }, class_name:"red-text"}
 	]
 
@@ -186,6 +186,7 @@ const CategoryList = ({ position=0, level=1, updateCategoriesPosition, setCatego
 
 	if (category_list.length > 0) {
 		return (
+			<>
 			<div className={`category-list ${level != 1 ? "extra_list" : ""}`}>
 				<ul>
 					{
@@ -200,37 +201,38 @@ const CategoryList = ({ position=0, level=1, updateCategoriesPosition, setCatego
 						</li>
 					))
 					}
-					{ 
-						level === 1 && 
-						<PrimaryButton 
-							class_name="primary-btn btn_list" 
-							text="Kreiraj Kategoriju" 
-							on_click={openCategoryForm}
-						/> 
-					}
 				</ul>
 				{ 
-					open_form && 
-					<CategoryForm 
-						category={context_menu_data.category || {}} 
-						updateCategory={updateCategory} 
-						createCategory={createCategory} 
-						closeForm={closeForm}
+					level === 1 && 
+					<PrimaryButton 
+						class_name="primary-btn btn_list" 
+						text="Kreiraj Kategoriju" 
+						on_click={() => { openCategoryForm(false) }}
 					/> 
 				}
-				{ 
-				(context_menu_data.open_menu || false) && 
-				<RightClickMenu 
-					options={context_menu_options} 
-					x={context_menu_data.x} 
-					y={context_menu_data.y} 
-					handleCloseMenu={closeContextMenu} />
-				}
-				{
-					(popup_content.open_popup || false) &&
-					<Popup content={popup_content.content} />
-				}
 			</div>
+			{ 
+				open_form && 
+				<CategoryForm 
+					category={context_menu_data.category || {}} 
+					updateCategory={updateCategory} 
+					createCategory={createCategory} 
+					closeForm={closeForm}
+				/> 
+			}
+			{ 
+			(context_menu_data.open_menu || false) && 
+			<RightClickMenu 
+				options={context_menu_options} 
+				x={context_menu_data.x} 
+				y={context_menu_data.y} 
+				handleCloseMenu={closeContextMenu} />
+			}
+			{
+				(popup_content.open_popup || false) &&
+				<Popup content={popup_content.content} />
+			}
+			</>
 		);
 	}
 

@@ -17,6 +17,7 @@ body {
     padding: 13px 16px;
     min-width: 200px;
     max-width: 400px;
+    overflow: auto;
 
     >a {
         display: flex;
