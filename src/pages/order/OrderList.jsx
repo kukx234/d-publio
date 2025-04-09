@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 const axios = require('axios');
 import Table from '../../components/TableComponent.jsx';
 import Loader from '../../components/Loader.jsx';
+import Checkbox from '../../components/Checkbox.jsx';
 
 const OrderList = () => {
   	const [orders_list, setOrders] = useState([]);
   	const [loading, setLoading] = useState(true);
 	const [search, setSearch] = useState("");
+	const [open_order_form, setOpenOrderForm] = useState("");
 
   	const fetchOrders = async () => {
 		try {
@@ -22,6 +24,15 @@ const OrderList = () => {
   	useEffect(() => {
 		fetchOrders();  
 	}, []);
+
+	const handleCompleteOrder = async (is_checked, order_id) => {
+		try {
+			let update_data = is_checked ? {completedAt: new Date()} : {completedAt: null};
+			const put_response = await window.api.putData(`orders/${order_id}`, update_data);
+		} catch (err) {
+			console.error('Error completing order:', err);
+		}
+	}
 
 	const filteredOrders = orders_list.filter(order => {
 
@@ -52,6 +63,7 @@ const OrderList = () => {
         { key: "user", label: "Korisnik" , render: (data) => { return data?.user?.first_name + ' ' + data?.user?.last_name }},
         { key: "total_amount", label: "Ukupno", render: (data) => { return data.total_amount + '€' }},
         { key: "createdAt", label: "Aktivan od", render: (data) => { return new Date(data.createdAt).toLocaleDateString("en-GB") }},
+		{ key: "completedAt", label: "Odrađeno", render: (data) => { return <Checkbox checked={data.completedAt || false} onChange={(e) => handleCompleteOrder(e, data._id)} /> }},
     ];
 
   if (loading) return <div className='loader-cont'><Loader/></div>
@@ -72,7 +84,7 @@ const OrderList = () => {
                 columns={columns} 
                 data={filteredOrders} 
                 maxHeightOffset={80}
-                //onRowClick={openUserForm}
+                onRowClick={() => { setOpenOrderForm(true) }}
             />
 		</div>
     </div> 
