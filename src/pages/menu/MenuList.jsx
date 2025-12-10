@@ -4,53 +4,94 @@ import CategoryList from '../category/CategoryList.jsx';
 import ProductList from '../product/ProductList.jsx';
 import '../../styles/menu.scss';
 import Notification from '../../components/Notification.jsx';
+import Loader from '../../components/Loader.jsx';
 
 const Menu = () => {
-    const [category, setCategory] = useState(0);
-    const [product_id, setProductid] = useState(0);
-    const [categories_position, setCategoriesPosition] = useState({position_1: { level: 1, position: 0}});
+    const [products_list, setProducts] = useState([]);
     const [notifications, setNotifications] = useState([]);
+    const [categories, setCategories] = useState({level_1: []});
+    const [loading, setLoading] = useState(true);
+    const [product_category_id, setProductCategory] = useState(false);
+    const [selected_category, setSelectedCategory] = useState({level_1:[]});
+    const [last_level, setLastLevel] = useState();
 
-    const updateCategoriesPosition = (level, position, only_remove=false) => {
-        
-        //delete from state
-        const level_up = level + 1;
-        const position_level_up = 'position_' + level_up;
-        if (categories_position[position_level_up]) {
-            setCategoriesPosition((prev_state) => {
-                const {[position_level_up]: deleted, ...positions} = prev_state;
-                return positions;
-            });
+    useEffect(() => {
+        if (categories.level_1) {
+            fetchCategories();  
         }
+    }, []);
 
-        if(only_remove) {
-            return;
-        }
-        
-        //set new state
-        const position_level = 'position_' + level;
-        setCategoriesPosition((prev_state) => {
-            let existing_position = prev_state[position_level];
+    const fetchCategories = async (parent_category_id=null, level=1) => {
+		let categories_arr = [];
 
-            if (!existing_position) {
-                return {
-                    ...prev_state,
-                    [position_level]: {
-                        level,
-                        position
+		let query_string = `categories/all/?parent_category_id=${parent_category_id}`;
+		try {
+            setProductCategory(false);
+             const level_key = 'level_' + level;
+
+            if (parent_category_id) {
+                const category_level = "level_" + (level - 1);
+                const category = categories[category_level]?.find(category => category._id === parent_category_id);
+               
+                if (category) {
+                    setSelectedCategory(prev => {
+                        const newState = {};
+                        
+                        for (let i = 1; i < (level-1); i++) {
+                            const key = `level_${i}`;
+                            if (prev[key]) {
+                                newState[key] = prev[key];
+                            }
+                        }
+
+                        newState[category_level] = category;
+                        
+                        return newState;
+                    });
+                }
+            }
+            
+			categories_arr = await window.api.fetchData(query_string);
+			setCategories(prev => {
+                const newState = {};
+                
+                for (let i = 1; i < level; i++) {
+                    const key = `level_${i}`;
+                    if (prev[key]) {
+                        newState[key] = prev[key];
                     }
                 }
+
+                if (categories_arr.length > 0) {
+                    newState[level_key] = categories_arr;
+                    setLastLevel(level);
+                }
+                
+                return newState;
+            });
+
+            if (categories_arr.length < 1) {
+                fetchProducts(parent_category_id);
+                setProductCategory(parent_category_id);
             }
 
-            return {
-                ...prev_state,
-                [position_level]: {
-                    ...existing_position,
-                    position
-                }
-            }
-        })
-    }
+		} catch (err) {
+			console.error('Error fetching categories:', err);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+   const fetchProducts = async (category_id) => {
+        try {
+            const products = await window.api.fetchData("products/all/" + "?category_id=" + category_id);
+            setProducts(products);
+        } catch (err) {
+            console.error('Error fetching products:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const newNotification = (data) => {
         const new_notification = {
@@ -66,27 +107,41 @@ const Menu = () => {
         }, 3000);
     }
 
-    const categories = Object.values(categories_position);
+    if (loading) return <div className='loader-cont'><Loader/></div>
 
     return (
         <div className='menupage-container'>
             <h1>Meni</h1>
             <div className="main-menu-cont">
                 {
-				categories.map((category_position, index) => {
+				Object.keys(categories).map((level_key, index) => {
                     return (
                         <CategoryList 
                             key={index}
-                            level={category_position.level} 
-                            position={category_position.position}
-                            updateCategoriesPosition={updateCategoriesPosition}
-                            setCategory={setCategory}
+                            level_key={level_key} 
+                            category_list={categories[level_key]}
+                            selected_category={selected_category}
+                            fetchCategories={fetchCategories}
                             newNotification={newNotification}
                         />
                     )
                 })
-                }   
-                { Object.keys(category).length != 0 && <ProductList category={category} newNotification={newNotification} /> } 
+                }
+                {
+                    (products_list.length < 1) && 
+                    <CategoryList 
+                        level_key={"level_" + (last_level + 1)}
+                        category_list={[]}
+                        selected_category={selected_category}
+                        fetchCategories={fetchCategories}
+                        newNotification={newNotification}
+                    />
+                }
+                {product_category_id && <ProductList
+                    products_list={products_list} 
+                    product_category_id={product_category_id}
+                    fetchProducts={fetchProducts} 
+                    newNotification={newNotification} />}
             </div>
             {
                 notifications.length > 0 && <Notification content={notifications} />

@@ -5,40 +5,21 @@ import MenuIcon from '../../components/icons/MenuIcon.jsx';
 import PrimaryButton from '../../components/PrimaryButton.jsx';
 import RightClickMenu from '../../components/RightClickMenu.jsx';
 import Popup from '../../components/Popup.jsx';
-import Loader from '../../components/Loader.jsx';
 
-const CategoryList = ({ position=0, level=1, updateCategoriesPosition, setCategory, newNotification=()=>{} }) => {
-  	const [category_list, setCategories] = useState([]);
-	const [loading, setLoading] = useState(true);
+const CategoryList = ({level_key, fetchCategories, selected_category, category_list, newNotification=()=>{} }) => {
+	const [level_name, level_raw] = level_key.split('_');
+	const level = Number(level_raw);
 	const [open_form, setOpenForm] = useState(false);
 	const [context_menu_data, setContextMenuData] = useState({});
 	const [popup_content, setPopupContent] = useState({});
-	const [hide_list, setHideList] = useState(false);
-	
+	const [new_category_data, setNewCategoryData] = useState();
+
 	useEffect(() => {
-		if (!open_form) {
-			fetchCategories();  
-		}
-	}, [open_form, position]);
-
-	const fetchCategories = async (p=position, l=level) => {
-		let categories = [];
-		try {
-			let query_string = `categories/all/?level=${l}`;
-			if (l > 1) {
-				query_string += `&position=${p}`;
-			}
-			categories = await window.api.fetchData(query_string);
-			setCategories(categories);
-		} catch (err) {
-			console.error('Error fetching categories:', err);
-		} finally {
-			setLoading(false);
-		}
-
-		return categories;
-	};
-
+		setNewCategoryData({
+			parent_category_id: selected_category["level_" + (level-1)]?._id || null
+		})
+	}, []);
+	
 	const closeForm = () => {
 		setOpenForm(false);
 	}
@@ -53,33 +34,7 @@ const CategoryList = ({ position=0, level=1, updateCategoriesPosition, setCatego
 		setOpenForm(true);
 	}
 
-	const checkForSubcategories = async (event) => {
-		let category_id = event.target.getAttribute('data-category_id');
-		if (!category_id) {
-			return;
-		}
-
-		let category = category_list.find(category => category._id === category_id);
-		if (!category) {
-			return;
-		}
-
-		let level = category.level + 1;
-		let query_string = `categories/all/?level=${level}&limit=1`;
-		if (level > 1) {
-			query_string += `&position=${category.position}`;
-		}
-		const subcategories = await window.api.fetchData(query_string);
-		if(subcategories.length > 0) {
-			setCategory({});
-			updateCategoriesPosition(level, category.position);
-			return;
-		}
-
-		updateCategoriesPosition(category.level, category.position, true);
-		setCategory(category);
-	}
-
+	//TODO umjesto desnog klika trebam staviti 3 točkice i omogućiti klik na to
 	const handleRightClick = (event) => {
 		const category_id = event.target.getAttribute('data-category_id');
 		if (!category_id) {
@@ -112,6 +67,7 @@ const CategoryList = ({ position=0, level=1, updateCategoriesPosition, setCatego
                 subtitle: put_response.title
             });
 			closeForm();
+			fetchCategories(form_data.parent_category_id || null, level);
 		  } catch (err) {
 			console.error('Error creating / update category:', err);
 		  }
@@ -143,18 +99,13 @@ const CategoryList = ({ position=0, level=1, updateCategoriesPosition, setCatego
 
 		try {
 			const deleted = await window.api.deleteData('categories/' + context_menu_data.category._id);
-			let position = context_menu_data.category.position.replace(/\.[^.]+$/, ""); 
-			const categories = await fetchCategories(position, context_menu_data.category.level);
-
 			newNotification({
                 id: context_menu_data.category._id,
                 title: 'Kategorija uspiješno obrisana',
                 subtitle: context_menu_data.category.title
             });
 			setPopupContent({});
-			if (categories.length < 1) {
-				setHideList(true);
-			}
+			fetchCategories(context_menu_data.category.parent_category_id || null, level);
 		} catch (error) {
 			console.log('Error deleting category: ' + error);
 		}
@@ -170,6 +121,7 @@ const CategoryList = ({ position=0, level=1, updateCategoriesPosition, setCatego
 			subtitle: post_response.title
 		  });
 		  closeForm();
+		  fetchCategories(form_data.parent_category_id || null, level);
 		} catch (err) {
 		  console.error('Error creating / update category:', err);
 		}
@@ -180,10 +132,6 @@ const CategoryList = ({ position=0, level=1, updateCategoriesPosition, setCatego
 		{label: 'Obriši kategoriju', contextFn: () => { deleteCategory(false) }, class_name:"red-text"}
 	]
 
-	if (hide_list) return '';
-
-	if (loading) return <div className='loader-cont'><Loader/></div>
-
 	if (category_list.length > 0) {
 		return (
 			<>
@@ -192,7 +140,8 @@ const CategoryList = ({ position=0, level=1, updateCategoriesPosition, setCatego
 					{
 					category_list.map((category) => (
 						<li 
-							onClick={checkForSubcategories} 
+							className={selected_category[level_key]?._id === category._id ? "current_category" : ''}
+							onClick={() => { fetchCategories(category._id, level+1) }} 
 							key={category._id} 
 							data-category_id={category._id}
 							onContextMenu={handleRightClick}
@@ -203,7 +152,6 @@ const CategoryList = ({ position=0, level=1, updateCategoriesPosition, setCatego
 					}
 				</ul>
 				{ 
-					level === 1 && 
 					<PrimaryButton 
 						class_name="primary-btn btn_list" 
 						text="Kreiraj Kategoriju" 
@@ -214,7 +162,7 @@ const CategoryList = ({ position=0, level=1, updateCategoriesPosition, setCatego
 			{ 
 				open_form && 
 				<CategoryForm 
-					category={context_menu_data.category || {}} 
+					category={context_menu_data.category || new_category_data || {}} 
 					updateCategory={updateCategory} 
 					createCategory={createCategory} 
 					closeForm={closeForm}
@@ -247,7 +195,8 @@ const CategoryList = ({ position=0, level=1, updateCategoriesPosition, setCatego
 			</div>
 			{ 
 				open_form && 
-				<CategoryForm  
+				<CategoryForm
+					category={new_category_data || {}}
 					updateCategory={updateCategory} 
 					createCategory={createCategory} 
 					closeForm={closeForm}

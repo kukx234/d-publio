@@ -4,32 +4,12 @@ import MenuIcon from '../../components/icons/MenuIcon.jsx';
 import PrimaryButton from '../../components/PrimaryButton.jsx';
 import ProductForm from './ProductForm.jsx';
 import Popup from '../../components/Popup.jsx';
-import Loader from '../../components/Loader.jsx';
 
-const ProductList = ({category, newNotification=()=>{}}) => {
-	const [products_list, setProducts] = useState([]);
-	const [loading, setLoading] = useState(true);
+const ProductList = ({products_list, product_category_id, fetchProducts, newNotification=()=>{}}) => {
 	const [open_form, setOpenForm] = useState(false);
-	const [product, setProduct] = useState({
-		category: category
-	});
+	const [product, setProduct] = useState({category: product_category_id});
 	const [popup_content, setPopupContent] = useState({});
-
-	const fetchProducts = async () => {
-		try {
-			const products = await window.api.fetchData("products/all/" + "?category_id=" + category._id);
-			setProducts(products);
-		} catch (err) {
-			console.error('Error fetching products:', err);
-		} finally {
-			setLoading(false);
-		}
-	};
-
-	useEffect(() => {
-		fetchProducts();  
-	}, [open_form, category]);
-
+	
 	const openProductForm = (product_id=false) => {
 		if (product_id) {
 			const current_product = products_list.find(product => product._id == product_id);
@@ -40,7 +20,7 @@ const ProductList = ({category, newNotification=()=>{}}) => {
 	}
 
 	const closeForm = () => {
-		setProduct({ category: product.category })
+		setProduct({ category: product_category_id })
 		setOpenForm(false);
 	}
 
@@ -53,6 +33,8 @@ const ProductList = ({category, newNotification=()=>{}}) => {
 			subtitle: post_response.title
 		  });
 		  closeForm();
+
+		  fetchProducts(product_category_id);
 		} catch (err) {
 		  console.error('Error creating / update product:', err);
 		}
@@ -67,6 +49,7 @@ const ProductList = ({category, newNotification=()=>{}}) => {
 				subtitle: put_response.title
 			  });
 			closeForm();
+			fetchProducts(product_category_id);
 		} catch (err) {
 			console.error('Error creating / update product:', err);
 		}
@@ -104,13 +87,11 @@ const ProductList = ({category, newNotification=()=>{}}) => {
 				subtitle: product.title
 			  });
 			setPopupContent({});
-			fetchProducts();
+			fetchProducts(product_category_id);
 		} catch (error) {
 			console.log('Error deleting product: ' + error);
 		}
 	}
-
-	if (loading) return <div className='loader-cont'><Loader/></div>
 
 	if (products_list.length > 0) {
 		return (
